@@ -6,10 +6,11 @@ import useGameEngine from "@/game_engine/game_engine";
 import {CHAR_HEIGHT, CHAR_WIDTH, GAME_HEIGHT, GAME_WIDTH} from "@/constants/game";
 import useCharacter from "@/game_engine/character";
 import {generatePosition} from "@/utils/character";
+import { Power } from "../obstacles/Power";
 
 export const USER_GENERATED_OBSTACLES = [
     { id: 1, position: generatePosition(), Component: Pillar },
-    { id: 2, position: generatePosition(1.2), Component: Pillar },
+    { id: 2, position: generatePosition(1.2), Component: Power },
     { id: 3, position: generatePosition(1.4), Component: Pillar },
     { id: 4, position: generatePosition(1.6), Component: Pillar }
 ]
