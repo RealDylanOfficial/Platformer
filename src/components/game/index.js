@@ -9,12 +9,21 @@ import { CHAR_HEIGHT, CHAR_WIDTH, GAME_HEIGHT, GAME_WIDTH } from "@/constants/ga
 import useCharacter from "@/game_engine/character";
 import { generatePosition } from "@/utils/character";
 
-export const USER_GENERATED_OBSTACLES = [
-    { id: 1, position: generatePosition(), Component: Pillar },
-    { id: 2, position: generatePosition(1.2), Component: Pillar },
-    { id: 3, position: generatePosition(1.4), Component: Pillar },
-    { id: 4, position: generatePosition(1.6), Component: Pillar }
-];
+const NUMBER_OF_OBSTACLES = 10;
+
+const generateObstacles = () => {
+    const obstacles = [];
+    for (let i = 1; i <= NUMBER_OF_OBSTACLES; i++) {
+        obstacles.push({
+            id: i,
+            position: generatePosition(1 + i * 0.2),
+            Component: Pillar
+        });
+    }
+    return obstacles;
+};
+
+export const USER_GENERATED_OBSTACLES = generateObstacles();
 
 export const Game = () => {
     const { charRef, charCoords, jumpClicked } = useCharacter();
@@ -22,10 +31,21 @@ export const Game = () => {
         charCoords
     });
 
-    // State to manage the current character
     const [currentCharacter, setCurrentCharacter] = useState(characters.Gordon);
+    const [highScore, setHighScore] = useState(0);
+    const [highScoreName, setHighScoreName] = useState('');
 
-    // Handle key press to change character
+    useEffect(() => {
+        const savedHighScore = localStorage.getItem('highScore');
+        const savedHighScoreName = localStorage.getItem('highScoreName');
+        if (savedHighScore) {
+            setHighScore(parseInt(savedHighScore, 10));
+        }
+        if (savedHighScoreName) {
+            setHighScoreName(savedHighScoreName);
+        }
+    }, []);
+
     useEffect(() => {
         const handleKeyPress = (event) => {
             switch (event.key) {
@@ -47,18 +67,46 @@ export const Game = () => {
                 case '6':
                     setCurrentCharacter(characters.TheGc);
                     break;
+                case '^':
+                    setCurrentCharacter(characters.Ainsley2);
+                    break;
                 default:
                     break;
             }
         };
-
         window.addEventListener('keydown', handleKeyPress);
-
-        // Cleanup function to remove the event listener
         return () => {
             window.removeEventListener('keydown', handleKeyPress);
         };
-    }, []); // Empty dependency array ensures this runs only once
+    }, []);
+
+
+    useEffect(() => {
+        if (isGameOver) {
+            if (parseInt(points / 10) > highScore) {
+                setHighScore(parseInt(points / 10));
+                            if (playerName) {
+                    setHighScoreName(playerName);
+                    localStorage.setItem('highScore', parseInt(points / 10));
+                    localStorage.setItem('highScoreName', playerName);
+                }
+            }
+        }
+    }, [isGameOver, points, highScore]);
+
+    const shareHighScore = () => {
+        const message = `I just scored ${highScore} in the game! Can you beat my high score?`;
+        if (navigator.share) {
+            navigator.share({
+                title: 'Check out my high score!',
+                text: message,
+            }).catch(console.error);
+        } else {
+            // Fallback for desktop browsers
+            const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(message)}`;
+            window.open(twitterUrl, '_blank');
+        }
+    };
 
     return (
         <>
@@ -84,35 +132,35 @@ export const Game = () => {
                         position={obstacle.position}
                     />
                 ))}
-                {isGameOver && <GameOver />}
+                {isGameOver && <GameOver highScore={highScore} highScoreName={highScoreName} onShare={shareHighScore} />}
             </div>
             <div style={{
-                position: 'fixed', // Fixed positioning to keep it in view
-                bottom: '10px',   // Distance from the bottom of the viewport
-                left: '50%',      // Center horizontally
-                transform: 'translateX(-50%)', // Center horizontally
+                position: 'fixed',
+                bottom: '10px',
+                left: '50%',
+                transform: 'translateX(-50%)',
                 textAlign: 'center',
                 fontSize: '1.5em',
                 fontWeight: 'bold',
-                color: '#fff', // White text for better contrast
-                backgroundColor: '#00247d', // British blue background
+                color: '#fff',
+                backgroundColor: '#00247d',
                 padding: '10px',
                 borderRadius: '8px',
-                boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)', // Optional: Shadow for better look
-                border: '2px solid #cf142b', // British red border
-                fontFamily: 'Times New Roman, serif' // British-inspired font
+                boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)',
+                border: '2px solid #cf142b',
+                fontFamily: 'Times New Roman, serif'
             }}>
                 <div style={{
-                    backgroundImage: 'url(/path-to-union-jack-image.jpg)', // Union Jack image
+                    backgroundImage: 'url(/path-to-union-jack-image.jpg)',
                     backgroundSize: 'contain',
                     backgroundRepeat: 'no-repeat',
                     backgroundPosition: 'center',
-                    height: '100px', // Adjust height as needed
-                    width: '100%', // Adjust width as needed
+                    height: '100px',
+                    width: '100%',
                     position: 'absolute',
                     top: '0',
                     left: '0',
-                    opacity: 0.1, // Make the Union Jack background subtle
+                    opacity: 0.1,
                 }}></div>
                 <p style={{ margin: '15px 0 15px 0' }}>Pigeons Collected</p>
                 <Score points={parseInt(points / 10)} />

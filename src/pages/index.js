@@ -1,6 +1,16 @@
+import React, { useState, useEffect } from 'react';
 import { Game } from "@/components/game";
 
 export default function Home() {
+    const [backgroundImage, setBackgroundImage] = useState('');
+
+    useEffect(() => {
+        // Randomly select background on component mount
+        const isNight = Math.random() < 0.1; // 10% chance for night
+        const image = isNight ? 'backgrounds/night.png' : 'backgrounds/day.png';
+        setBackgroundImage(image);
+    }, []); // Empty dependency array ensures this runs only once on mount
+
     return (
         <div style={{
             height: '100vh',
@@ -12,7 +22,7 @@ export default function Home() {
             overflow: 'hidden', // Ensures no scrollbars appear
         }}>
             <img 
-                src="backgrounds/day.png" // Update this path
+                src={backgroundImage} // Dynamically set image source
                 alt="Background"
                 style={{
                     position: 'absolute',
@@ -28,5 +38,6 @@ export default function Home() {
         </div>
     );
 }
+
 
 
