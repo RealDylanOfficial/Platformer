@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { CharacterComponent } from "@/components/characters/Character";
 import { characters } from "@/components/characters/Character";
@@ -36,14 +37,10 @@ export const Game = () => {
     const [highScoreName, setHighScoreName] = useState('');
 
     useEffect(() => {
-        const savedHighScore = localStorage.getItem('highScore');
-        const savedHighScoreName = localStorage.getItem('highScoreName');
-        if (savedHighScore) {
-            setHighScore(parseInt(savedHighScore, 10));
-        }
-        if (savedHighScoreName) {
-            setHighScoreName(savedHighScoreName);
-        }
+        const savedHighScore = parseInt(localStorage.getItem('highScore'), 10) || 0;
+        const savedHighScoreName = localStorage.getItem('highScoreName') || '';
+        setHighScore(savedHighScore);
+        setHighScoreName(savedHighScoreName);
     }, []);
 
     useEffect(() => {
@@ -67,9 +64,6 @@ export const Game = () => {
                 case '6':
                     setCurrentCharacter(characters.TheGc);
                     break;
-                case '^':
-                    setCurrentCharacter(characters.Ainsley2);
-                    break;
                 default:
                     break;
             }
@@ -80,33 +74,20 @@ export const Game = () => {
         };
     }, []);
 
-
     useEffect(() => {
         if (isGameOver) {
-            if (parseInt(points / 10) > highScore) {
-                setHighScore(parseInt(points / 10));
-                            if (playerName) {
+            const score = parseInt(points/10);
+            if (parseInt(points/10) > highScore) {
+                setHighScore(score);
+                const playerName = prompt('New high score! Enter your name:');
+                if (playerName) {
                     setHighScoreName(playerName);
-                    localStorage.setItem('highScore', parseInt(points / 10));
+                    localStorage.setItem('highScore', score);
                     localStorage.setItem('highScoreName', playerName);
                 }
             }
         }
     }, [isGameOver, points, highScore]);
-
-    const shareHighScore = () => {
-        const message = `I just scored ${highScore} in the game! Can you beat my high score?`;
-        if (navigator.share) {
-            navigator.share({
-                title: 'Check out my high score!',
-                text: message,
-            }).catch(console.error);
-        } else {
-            // Fallback for desktop browsers
-            const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(message)}`;
-            window.open(twitterUrl, '_blank');
-        }
-    };
 
     return (
         <>
@@ -132,7 +113,10 @@ export const Game = () => {
                         position={obstacle.position}
                     />
                 ))}
-                {isGameOver && <GameOver highScore={highScore} highScoreName={highScoreName} onShare={shareHighScore} />}
+                {isGameOver && <GameOver highScore={highScore} highScoreName={highScoreName} onSaveHighScore={(name) => {
+                    setHighScoreName(name);
+                    localStorage.setItem('highScoreName', name);
+                }} />}
             </div>
             <div style={{
                 position: 'fixed',
@@ -163,7 +147,7 @@ export const Game = () => {
                     opacity: 0.1,
                 }}></div>
                 <p style={{ margin: '15px 0 15px 0' }}>Pigeons Collected</p>
-                <Score points={parseInt(points / 10)} />
+                <Score points={parseInt(points / 10, 10)} />
             </div>
         </>
     );
