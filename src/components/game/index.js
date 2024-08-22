@@ -64,6 +64,9 @@ export const Game = () => {
                 case '6':
                     setCurrentCharacter(characters.TheGc);
                     break;
+                case '^':
+                    setCurrentCharacter(characters.Ainsley2);
+                    break;
                 default:
                     break;
             }
