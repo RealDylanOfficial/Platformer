@@ -4,7 +4,6 @@ import {CHAR_HEIGHT, CHAR_WIDTH} from "@/constants/game";
 export default function useCollisionDetection({ charCoords, obstacleRefs }) {
     return useCallback(() => {
         const COLLISION_PADDING = 30;
-
         return Object.values(obstacleRefs.current).some((obstacleRef) => {
             if (!obstacleRef) return false;
 
